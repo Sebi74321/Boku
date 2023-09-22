@@ -67,7 +67,7 @@ public class Board {
         } else return board[x][y] == 0;
     }
 
-    private void printBoard() {
+    public void printBoard() {
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
                 System.out.print(board[i][j] + " ");
@@ -76,7 +76,7 @@ public class Board {
         }
     }
 
-    private void printNeighbours(int x, int y) {
+    public void printNeighbours(int x, int y) {
         List<int[]> neighbours = getNeighbours(x, y);
         for (int[] neighbour : neighbours) {
             System.out.println(Arrays.toString(neighbour));
