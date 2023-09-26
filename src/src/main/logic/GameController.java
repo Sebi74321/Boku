@@ -80,16 +80,16 @@ public class GameController {
         try {
             gameController.makeMove(parseCoordinates('A',1));
             gameController.makeMove(parseCoordinates('B',3));
-            gameController.makeMove(parseCoordinates('A',2));
+            gameController.makeMove(parseCoordinates('B',2));
             gameController.makeMove(parseCoordinates('F',5));
-            gameController.makeMove(parseCoordinates('A',3));
+            gameController.makeMove(parseCoordinates('C',3));
             gameController.makeMove(parseCoordinates('B',5));
-            gameController.makeMove(parseCoordinates('A',4));
+            gameController.makeMove(parseCoordinates('D',4));
             gameController.makeMove(parseCoordinates('J',7));
-            gameController.makeMove(parseCoordinates('A',5));
+            gameController.makeMove(parseCoordinates('E',5));
             gameController.makeMove(parseCoordinates('H',5));
-            gameController.makeMove(parseCoordinates('A',6));
-            System.out.println(gameController.checkWin(parseCoordinates('A',6)[0],parseCoordinates('A',6)[1],1));
+            gameController.makeMove(parseCoordinates('F',6));
+            System.out.println(gameController.checkWin(parseCoordinates('F',6)[0],parseCoordinates('F',6)[1],1));
         } catch (invalidMoveException e) {
             e.printStackTrace();
         }
