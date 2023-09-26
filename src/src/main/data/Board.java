@@ -41,7 +41,7 @@ public class Board {
     }
 
     //returns the coordinates of all valid neighbours of the given tile
-    private List<int[]> getNeighbours(int x, int y) {
+    public List<int[]> getNeighbours(int x, int y) {
         List<int[]> neighbours = new ArrayList<>();
         int count = 0;
         for (int i = -1; i < 2; i++) {
