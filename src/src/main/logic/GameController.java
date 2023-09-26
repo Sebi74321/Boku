@@ -3,6 +3,8 @@ package main.logic;
 import main.data.Board;
 import main.data.Exceptions.invalidMoveException;
 
+import java.util.Scanner;
+
 //Class to start a new game and control the game flow
 public class GameController {
     Board currentBoard;
@@ -78,6 +80,24 @@ public class GameController {
     public static void main(String[] args) {
         GameController gameController=new GameController();
         try {
+            Scanner scanner = new Scanner(System.in);
+            String input;
+            while (true) {
+                input = scanner.nextLine();
+                if (input.equals("exit")) {
+                    break;
+                }
+                if(input.equals("reset")){
+                    gameController.startNewGame();
+                    continue;
+                }
+                if(input.equals("undo")){
+                    undo();
+                    continue;
+                }
+                gameController.makeMove(parseCoordinates(input.charAt(0), Integer.parseInt(input.substring(1))));
+                gameController.currentBoard.printBoard();
+            }
             gameController.makeMove(parseCoordinates('A',1));
             gameController.makeMove(parseCoordinates('B',3));
             gameController.makeMove(parseCoordinates('B',2));
@@ -94,5 +114,10 @@ public class GameController {
             e.printStackTrace();
         }
         gameController.currentBoard.printBoard();
+    }
+
+    private static void undo() {
+        //resets the board to the state before the last move
+
     }
 }
