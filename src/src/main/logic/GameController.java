@@ -16,10 +16,20 @@ public class GameController {
     private void startNewGame() {
         currentBoard = new Board();
         currentPlayer = 1;
+        System.out.println("New game started");
+        System.out.println("Player 1(white) starts");
         }
+
     public void makeMove(int[] x) throws invalidMoveException {
         currentBoard.setTile(x[0],x[1], currentPlayer);
-         currentPlayer=currentPlayer ==1?2:1;
+        if(checkWin(x[0],x[1],currentPlayer)){
+            System.out.println("Player "+currentPlayer+" wins!");
+            startNewGame();
+            return;
+        }
+        currentPlayer=currentPlayer ==1?2:1;
+        currentBoard.printBoard();
+        System.out.println("Player "+currentPlayer+"'s turn");
     }
     private static int[] parseCoordinates(char x, int y){
         int[] coordinates=new int[2];
@@ -96,20 +106,7 @@ public class GameController {
                     continue;
                 }
                 gameController.makeMove(parseCoordinates(input.charAt(0), Integer.parseInt(input.substring(1))));
-                gameController.currentBoard.printBoard();
             }
-            gameController.makeMove(parseCoordinates('A',1));
-            gameController.makeMove(parseCoordinates('B',3));
-            gameController.makeMove(parseCoordinates('B',2));
-            gameController.makeMove(parseCoordinates('F',5));
-            gameController.makeMove(parseCoordinates('C',3));
-            gameController.makeMove(parseCoordinates('B',5));
-            gameController.makeMove(parseCoordinates('D',4));
-            gameController.makeMove(parseCoordinates('J',7));
-            gameController.makeMove(parseCoordinates('E',5));
-            gameController.makeMove(parseCoordinates('H',5));
-            gameController.makeMove(parseCoordinates('F',6));
-            System.out.println(gameController.checkWin(parseCoordinates('F',6)[0],parseCoordinates('F',6)[1],1));
         } catch (invalidMoveException e) {
             e.printStackTrace();
         }
