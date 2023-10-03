@@ -61,7 +61,7 @@ public class Board {
         return board[x][y];
     }
 
-    public boolean isLegalMove(int x, int y, int value) {
+    public boolean isLegalMove(int x, int y) {
         if (Math.abs(x - y) > 5) {
             return false;
         } else return board[x][y] == 0;

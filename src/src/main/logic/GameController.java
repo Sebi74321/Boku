@@ -17,10 +17,15 @@ public class GameController {
         currentBoard = new Board();
         currentPlayer = 1;
         System.out.println("New game started");
+        currentBoard.printBoard();
         System.out.println("Player 1(white) starts");
         }
 
     public void makeMove(int[] x) throws invalidMoveException {
+        if(!currentBoard.isLegalMove(x[0],x[1])){
+            System.out.println("Invalid move, try again");
+            return;
+        }
         currentBoard.setTile(x[0],x[1], currentPlayer);
         if(checkWin(x[0],x[1],currentPlayer)){
             System.out.println("Player "+currentPlayer+" wins!");
@@ -95,9 +100,11 @@ public class GameController {
             while (true) {
                 input = scanner.nextLine();
                 if (input.equals("exit")) {
+                    System.out.println("Exiting game");
                     break;
                 }
                 if(input.equals("reset")){
+                    System.out.println("Resetting game");
                     gameController.startNewGame();
                     continue;
                 }
@@ -110,7 +117,6 @@ public class GameController {
         } catch (invalidMoveException e) {
             e.printStackTrace();
         }
-        gameController.currentBoard.printBoard();
     }
 
     private static void undo() {
