@@ -22,6 +22,13 @@ public class Board {
         }
     }
 
+    public Board(Board board){
+        this.board = new int[10][10];
+        for (int i = 0; i < 10; i++) {
+            System.arraycopy(board.getBoard()[i], 0, this.board[i], 0, 10);
+        }
+    }
+
     public int[][] getBoard() {
         return board;
     }
@@ -70,6 +77,9 @@ public class Board {
     public void printBoard() {
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
+                if(board[i][j]!=-1) {
+                    System.out.print(" " + board[i][j] + " ");
+                } else
                 System.out.print(board[i][j] + " ");
             }
             System.out.println();
@@ -82,9 +92,24 @@ public class Board {
             System.out.println(Arrays.toString(neighbour));
         }
     }
-    public static void main(String[] args) {
+
+    private void removeTile(int x, int y) {
+        if(x>9||y>9||Math.abs(x-y)>5)
+            return;
+        board[x][y] = 0;
+    }
+
+    public static void main(String[] args) throws invalidMoveException {
         Board board = new Board();
         board.printBoard();
-        board.printNeighbours(1,1);
+        System.out.println();
+        board.setTile(0, 0, 1);
+        Board boardCopy1 = new Board(board);
+        board.setTile(1, 1, 2);
+        board.printBoard();
+        System.out.println();
+        board.setBoard(boardCopy1.getBoard());
+        board.printBoard();
+
     }
 }
