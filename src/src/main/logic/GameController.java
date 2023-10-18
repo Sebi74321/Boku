@@ -3,6 +3,8 @@ package main.logic;
 import main.data.Board;
 import main.data.Exceptions.invalidMoveException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.Stack;
 
@@ -15,6 +17,7 @@ public class GameController {
     public GameController() {
         startNewGame();
     }
+
     private void startNewGame() {
         currentBoard = new Board();
         boardHistory.clear();
@@ -22,37 +25,58 @@ public class GameController {
         System.out.println("New game started");
         currentBoard.printBoard();
         System.out.println("Player 1(white) starts");
-        }
+    }
 
-    public void makeMove(int[] x) throws invalidMoveException {
-        if(!currentBoard.isLegalMove(x[0],x[1])){
+    //returns true if a capture move has to be made
+    public boolean makeMove(int[] coordinate) throws invalidMoveException {
+        if (!currentBoard.isLegalMove(coordinate[0], coordinate[1])) {
             System.out.println("Invalid move, try again");
-            return;
+            return false;
         }
         boardHistory.push(new Board(currentBoard));
-        currentBoard.setTile(x[0],x[1], currentPlayer);
-        if(checkWin(x[0],x[1])){
-            System.out.println("Player "+currentPlayer+" wins!");
+        currentBoard.setTile(coordinate[0], coordinate[1], currentPlayer);
+        if (checkWin(coordinate[0], coordinate[1])) {
+            System.out.println("Player " + currentPlayer + " wins!");
             startNewGame();
-            return;
+            return false;
         }
-        if(checkCapture(x[0],x[1])){
-            makeCaptureMove();
+        if (!checkCapture(coordinate).isEmpty()) {
+            currentBoard.printBoard();
+            System.out.println("Capture move possible");
+            return true;
+
         }
-        currentPlayer=currentPlayer ==1?2:1;
+        currentPlayer = currentPlayer == 1 ? 2 : 1;
+        currentBoard.unblockAll();
         currentBoard.printBoard();
-        System.out.println("Player "+currentPlayer+"'s turn");
+        System.out.println("Player " + currentPlayer + "'s turn");
+        return false;
     }
 
-    private void makeCaptureMove() {
+    //makes a capture move
+    //returns true if the move was successful
+    private boolean makeCaptureMove(List<int[]> captureMoves, int[] move) throws invalidMoveException {
+
+        for(int[] captureMove: captureMoves){
+            if(captureMove[0]==move[0]&&captureMove[1]==move[1]){
+                currentBoard.setTile(move[0], move[1], 9);
+                currentPlayer = currentPlayer == 1 ? 2 : 1;
+                currentBoard.printBoard();
+                System.out.println("Player " + currentPlayer + "'s turn");
+                return true;
+            }
+        }
+        System.out.println("Invalid capture move, try again");
+        return false;
 
     }
 
-    private static int[] parseCoordinates(char x, int y){
-        int[] coordinates=new int[2];
+
+    private static int[] parseCoordinates(char x, int y) {
+        int[] coordinates = new int[2];
         x = String.valueOf(x).toUpperCase().charAt(0);
-        coordinates[0]=x-'A';
-        coordinates[1]=y-1;
+        coordinates[0] = x - 'A';
+        coordinates[1] = y - 1;
         return coordinates;
     }
 
@@ -101,49 +125,85 @@ public class GameController {
         return false;
     }
 
-private boolean checkCapture(int x, int y){
+
+    private List<int[]> checkCapture(int[] coordinate) {
         //check if a capture move is possible
-        //capture moves are only possible if the current move sourronds a pair of enemy stones
+        //capture moves are only possible if the current move surrounds a pair of enemy stones
         //check in all 6 directions
         //horizontal
-    for (int i = -1; i < 2; i++) {
-        if (x + i >= 0 && x + i < 10) {
-            if (currentBoard.getBoard()[x + i][y] == 3-currentPlayer) {
-                if(x+i*2>=0 && x+i*2<10){
-                    if(currentBoard.getBoard()[x+i*2][y]==currentPlayer){
-                        System.out.println("Capture move possible");
-                        return true;
+        List<int[]> captureMoves = new ArrayList<>();
+        currentBoard.getNeighbours(coordinate[0], coordinate[1]);
+        for (int[] neighbour : currentBoard.getNeighbours(coordinate[0], coordinate[1])) {
+            if (currentBoard.getBoard(neighbour[0], neighbour[1]) + currentPlayer == 3) {
+                for (int[] neighbour2 : currentBoard.getNeighbours(neighbour[0], neighbour[1])) {
+                    if (currentBoard.getBoard(neighbour2[0], neighbour2[1]) + currentPlayer == 3) {
+                        for (int[] neighbour3 : currentBoard.getNeighbours(neighbour2[0], neighbour2[1])) {
+                            if (currentBoard.getBoard(neighbour3[0], neighbour3[1]) == currentPlayer) {
+                                captureMoves.add(neighbour);
+                                captureMoves.add(neighbour2);
+                            }
+                        }
+
                     }
                 }
             }
         }
+        return captureMoves;
     }
-
-        return false;
-}
 
 
     public static void main(String[] args) {
-        GameController gameController=new GameController();
+        GameController gameController = new GameController();
+        boolean capture;
         try {
             Scanner scanner = new Scanner(System.in);
             String input;
+            label:
             while (true) {
                 input = scanner.nextLine();
-                if (input.equals("exit")) {
-                    System.out.println("Exiting game");
-                    break;
+                switch (input) {
+                    case "exit":
+                        System.out.println("Exiting game");
+                        break label;
+                    case "reset":
+                        System.out.println("Resetting game");
+                        gameController.startNewGame();
+                        continue;
+                    case "undo":
+                        gameController.undo();
+                        continue;
                 }
-                if(input.equals("reset")){
-                    System.out.println("Resetting game");
-                    gameController.startNewGame();
+
+                if (input.length() != 2) {
+                    System.out.println("Invalid input, try again");
                     continue;
                 }
-                if(input.equals("undo")){
-                    gameController.undo();
-                    continue;
+                capture = gameController.makeMove(parseCoordinates(input.charAt(0), Integer.parseInt(input.substring(1))));
+                if (capture) {
+                    while(capture){
+                        System.out.println("Enter capture move");
+                        System.out.println(gameController.checkCapture(parseCoordinates(input.charAt(0), Integer.parseInt(input.substring(1)))));
+                        String captureInput = scanner.nextLine();
+
+                        switch (captureInput) {
+                            case "exit":
+                                System.out.println("Exiting game");
+                                break label;
+                            case "reset":
+                                System.out.println("Resetting game");
+                                gameController.startNewGame();
+                                capture = false;
+                                continue;
+                            case "undo":
+                                gameController.undo();
+                                capture = false;
+                                continue;
+                        }
+
+                        capture = !gameController.makeCaptureMove(gameController.checkCapture(parseCoordinates(input.charAt(0), Integer.parseInt(input.substring(1)))), parseCoordinates(captureInput.charAt(0), Integer.parseInt(captureInput.substring(1))));
+                    }
+
                 }
-                gameController.makeMove(parseCoordinates(input.charAt(0), Integer.parseInt(input.substring(1))));
             }
         } catch (invalidMoveException e) {
             e.printStackTrace();
@@ -155,13 +215,11 @@ private boolean checkCapture(int x, int y){
         //if there are no moves to undo, nothing happens
         if (boardHistory.empty()) {
             System.out.println("No moves to undo");
-            return;
-        }
-        else {
+        } else {
             currentBoard.setBoard(boardHistory.pop().getBoard());
             currentBoard.printBoard();
-            currentPlayer=currentPlayer ==1?2:1;
-            System.out.println("Player "+currentPlayer+"'s turn");
+            currentPlayer = currentPlayer == 1 ? 2 : 1;
+            System.out.println("Player " + currentPlayer + "'s turn");
         }
     }
 }

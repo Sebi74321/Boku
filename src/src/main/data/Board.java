@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Board {
     //contains a 2D array of ints representing the board
-//0= empty, 1= player 1(white), 2= player 2(black) -1= invalid
+//0= empty, 1= player 1(white), 2= player 2(black) 9=blocked -1= invalid
     private int[][] board;
 
     public Board() {
@@ -80,7 +80,7 @@ public class Board {
                 if(board[i][j]!=-1) {
                     System.out.print(" " + board[i][j] + " ");
                 } else
-                System.out.print(board[i][j] + " ");
+                    System.out.print(board[i][j] + " ");
             }
             System.out.println();
         }
@@ -97,6 +97,15 @@ public class Board {
         if(x>9||y>9||Math.abs(x-y)>5)
             return;
         board[x][y] = 0;
+    }
+
+    public void unblockAll(){
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                if(board[i][j]==9)
+                    board[i][j]=0;
+            }
+        }
     }
 
     public static void main(String[] args) throws invalidMoveException {
