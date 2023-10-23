@@ -82,6 +82,7 @@ public class Heuristic {
                     winningState = true;
                     return;
                 }else if(checkWin(i,j,board,opponent)){
+                    losingState = true;
                     return;
                 }
                 if (board[i][j] == 1) {
