@@ -35,7 +35,7 @@ public class GameController {
         }
         boardHistory.push(new Board(currentBoard));
         currentBoard.setTile(coordinate[0], coordinate[1], currentPlayer);
-        if (checkWin(coordinate[0], coordinate[1])) {
+        if (checkWin(coordinate[0], coordinate[1],currentBoard.getBoard(),currentPlayer)) {
             System.out.println("Player " + currentPlayer + " wins!");
             startNewGame();
             return false;
@@ -80,13 +80,13 @@ public class GameController {
         return coordinates;
     }
 
-    private boolean checkWin(int x, int y) {
+    public static boolean checkWin(int x, int y, int[][] board, int player) {
         int count = 0;
         //check in all 6 directions whether a line of 5 is formed
         //horizontal
         for (int i = -4; i < 5; i++) {
             if (x + i >= 0 && x + i < 10) {
-                if (currentBoard.getBoard()[x + i][y] == currentPlayer) {
+                if (board[x + i][y] == player) {
                     count++;
                 } else {
                     count = 0;
@@ -99,7 +99,7 @@ public class GameController {
         //vertical
         for (int i = -4; i < 5; i++) {
             if (y + i >= 0 && y + i < 10) {
-                if (currentBoard.getBoard()[x][y + i] == currentPlayer) {
+                if (board[x][y + i] == player) {
                     count++;
                 } else {
                     count = 0;
@@ -112,7 +112,7 @@ public class GameController {
         //diagonal 1
         for (int i = -4; i < 5; i++) {
             if (x + i >= 0 && x + i < 10 && y + i >= 0 && y + i < 10) {
-                if (currentBoard.getBoard()[x + i][y + i] == currentPlayer) {
+                if (board[x + i][y + i] == player) {
                     count++;
                 } else {
                     count = 0;
