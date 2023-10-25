@@ -9,13 +9,17 @@ import java.util.Scanner;
 import java.util.Stack;
 
 //Class to start a new game and control the game flow
-public class GameController {
+public final class GameController {
+    private static GameController instance = null;
     Board currentBoard;
     int currentPlayer;
     Stack<Board> boardHistory = new Stack<>();
 
-    public GameController() {
-        startNewGame();
+    public static GameController getInstance() {
+        if (instance == null) {
+            instance = new GameController();
+        }
+        return instance;
     }
 
     private void startNewGame() {
@@ -153,7 +157,7 @@ public class GameController {
 
 
     public static void main(String[] args) {
-        GameController gameController = new GameController();
+        GameController gameController = GameController.getInstance();
         boolean capture;
         try {
             Scanner scanner = new Scanner(System.in);
