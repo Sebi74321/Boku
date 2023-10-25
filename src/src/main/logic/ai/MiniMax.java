@@ -1,7 +1,6 @@
 package main.logic.ai;
 //Minimax algorithm for Boku
-import java.io.*;
-public class MiniMax {
+public class MiniMax extends Strategy {
 
         // Initial values of
 // Alpha and Beta
@@ -13,7 +12,7 @@ public class MiniMax {
 // current player (Initially called
 // for root and maximizer)
         static int minimax(int depth, int nodeIndex,
-                           Boolean maximizingPlayer,
+                           boolean maximizingPlayer,
                            int[] values, int alpha,
                            int beta)
         {
@@ -22,9 +21,10 @@ public class MiniMax {
             if (depth == 3)
                 return values[nodeIndex];
 
+            int best;
             if (maximizingPlayer)
             {
-                int best = MIN;
+                best = MIN;
 
                 // Recur for left and
                 // right children
@@ -37,13 +37,12 @@ public class MiniMax {
 
                     // Alpha Beta Pruning
                     if (beta <= alpha)
-                        break;
+                        return alpha;
                 }
-                return best;
             }
             else
             {
-                int best = MAX;
+                best = MAX;
 
                 // Recur for left and
                 // right children
@@ -57,10 +56,10 @@ public class MiniMax {
 
                     // Alpha Beta Pruning
                     if (beta <= alpha)
-                        break;
+                        return beta;
                 }
-                return best;
             }
+            return best;
         }
 
         // Driver Code

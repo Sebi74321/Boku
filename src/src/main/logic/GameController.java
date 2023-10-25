@@ -35,12 +35,12 @@ public class GameController {
         }
         boardHistory.push(new Board(currentBoard));
         currentBoard.setTile(coordinate[0], coordinate[1], currentPlayer);
-        if (checkWin(coordinate[0], coordinate[1],currentBoard.getBoard(),currentPlayer)) {
+        if (checkWin(coordinate[0], coordinate[1], currentBoard.getBoard(), currentPlayer)) {
             System.out.println("Player " + currentPlayer + " wins!");
             startNewGame();
             return false;
         }
-        if (!checkCapture(coordinate).isEmpty()) {
+        if (!checkCapture(coordinate, currentBoard, currentPlayer).isEmpty()) {
             currentBoard.printBoard();
             System.out.println("Capture move possible");
             return true;
@@ -57,8 +57,8 @@ public class GameController {
     //returns true if the move was successful
     private boolean makeCaptureMove(List<int[]> captureMoves, int[] move) throws invalidMoveException {
 
-        for(int[] captureMove: captureMoves){
-            if(captureMove[0]==move[0]&&captureMove[1]==move[1]){
+        for (int[] captureMove : captureMoves) {
+            if (captureMove[0] == move[0] && captureMove[1] == move[1]) {
                 currentBoard.setTile(move[0], move[1], 9);
                 currentPlayer = currentPlayer == 1 ? 2 : 1;
                 currentBoard.printBoard();
@@ -126,19 +126,19 @@ public class GameController {
     }
 
 
-    private List<int[]> checkCapture(int[] coordinate) {
+    public static List<int[]> checkCapture(int[] coordinate, Board board, int currentPlayer) {
         //check if a capture move is possible
         //capture moves are only possible if the current move surrounds a pair of enemy stones
         //check in all 6 directions
         //horizontal
         List<int[]> captureMoves = new ArrayList<>();
-        currentBoard.getNeighbours(coordinate[0], coordinate[1]);
-        for (int[] neighbour : currentBoard.getNeighbours(coordinate[0], coordinate[1])) {
-            if (currentBoard.getBoard(neighbour[0], neighbour[1]) + currentPlayer == 3) {
-                for (int[] neighbour2 : currentBoard.getNeighbours(neighbour[0], neighbour[1])) {
-                    if (currentBoard.getBoard(neighbour2[0], neighbour2[1]) + currentPlayer == 3) {
-                        for (int[] neighbour3 : currentBoard.getNeighbours(neighbour2[0], neighbour2[1])) {
-                            if (currentBoard.getBoard(neighbour3[0], neighbour3[1]) == currentPlayer) {
+        board.getNeighbours(coordinate[0], coordinate[1]);
+        for (int[] neighbour : board.getNeighbours(coordinate[0], coordinate[1])) {
+            if (board.getBoard(neighbour[0], neighbour[1]) + currentPlayer == 3) {
+                for (int[] neighbour2 : board.getNeighbours(neighbour[0], neighbour[1])) {
+                    if (board.getBoard(neighbour2[0], neighbour2[1]) + currentPlayer == 3) {
+                        for (int[] neighbour3 : board.getNeighbours(neighbour2[0], neighbour2[1])) {
+                            if (board.getBoard(neighbour3[0], neighbour3[1]) == currentPlayer) {
                                 captureMoves.add(neighbour);
                                 captureMoves.add(neighbour2);
                             }
@@ -180,9 +180,9 @@ public class GameController {
                 }
                 capture = gameController.makeMove(parseCoordinates(input.charAt(0), Integer.parseInt(input.substring(1))));
                 if (capture) {
-                    while(capture){
+                    while (capture) {
                         System.out.println("Enter capture move");
-                        System.out.println(gameController.checkCapture(parseCoordinates(input.charAt(0), Integer.parseInt(input.substring(1)))));
+                        System.out.println(checkCapture(parseCoordinates(input.charAt(0), Integer.parseInt(input.substring(1))), gameController.currentBoard, gameController.currentPlayer));
                         String captureInput = scanner.nextLine();
 
                         switch (captureInput) {
@@ -200,7 +200,7 @@ public class GameController {
                                 continue;
                         }
 
-                        capture = !gameController.makeCaptureMove(gameController.checkCapture(parseCoordinates(input.charAt(0), Integer.parseInt(input.substring(1)))), parseCoordinates(captureInput.charAt(0), Integer.parseInt(captureInput.substring(1))));
+                        capture = !gameController.makeCaptureMove(checkCapture(parseCoordinates(input.charAt(0), Integer.parseInt(input.substring(1))), gameController.currentBoard, gameController.currentPlayer), parseCoordinates(captureInput.charAt(0), Integer.parseInt(captureInput.substring(1))));
                     }
 
                 }

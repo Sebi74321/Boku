@@ -29,6 +29,13 @@ public class Board {
         }
     }
 
+    public Board(int[][] newBoard) {
+        this.board = new int[10][10];
+        for (int i = 0; i < 10; i++) {
+            System.arraycopy(newBoard[i], 0, this.board[i], 0, 10);
+        }
+    }
+
     public int[][] getBoard() {
         return board;
     }
