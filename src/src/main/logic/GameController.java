@@ -2,24 +2,35 @@ package main.logic;
 
 import main.data.Board;
 import main.data.Exceptions.invalidMoveException;
+import main.logic.ai.Agent;
+import main.logic.ai.MiniMax;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
-import java.util.Stack;
+import java.util.*;
 
 //Class to start a new game and control the game flow
 public final class GameController {
-    private static GameController instance = null;
-    Board currentBoard;
-    int currentPlayer;
-    Stack<Board> boardHistory = new Stack<>();
 
-    public static GameController getInstance() {
-        if (instance == null) {
-            instance = new GameController();
-        }
-        return instance;
+    private Board currentBoard;
+    private int currentPlayer;
+    private final Stack<Board> boardHistory = new Stack<>();
+
+
+    public GameController() {
+    }
+
+
+    public GameController(GameController gameController) {
+        currentBoard = new Board(gameController.getCurrentBoard());
+        currentPlayer = gameController.getCurrentPlayer();
+        boardHistory.addAll(gameController.getBoardHistory());
+    }
+
+    public Stack<Board> getBoardHistory() {
+        return boardHistory;
+    }
+
+    public int getCurrentPlayer() {
+        return currentPlayer;
     }
 
     private void startNewGame() {
@@ -44,16 +55,18 @@ public final class GameController {
             startNewGame();
             return false;
         }
-        if (!checkCapture(coordinate, currentBoard, currentPlayer).isEmpty()) {
-            currentBoard.printBoard();
-            System.out.println("Capture move possible");
+        List<int[]> captureMoves = checkCapture(coordinate, currentBoard, currentPlayer);
+        if (!captureMoves.isEmpty()) {
+            //if a capture move is already given, make that move (relevant for AI)
+            if (coordinate.length == 4) {
+                makeCaptureMove(captureMoves, Arrays.copyOfRange(coordinate, 2, 4));
+                return false;
+            }
             return true;
 
         }
         currentPlayer = currentPlayer == 1 ? 2 : 1;
         currentBoard.unblockAll();
-        currentBoard.printBoard();
-        System.out.println("Player " + currentPlayer + "'s turn");
         return false;
     }
 
@@ -64,9 +77,8 @@ public final class GameController {
         for (int[] captureMove : captureMoves) {
             if (captureMove[0] == move[0] && captureMove[1] == move[1]) {
                 currentBoard.setTile(move[0], move[1], 9);
+                boardHistory.push(new Board(currentBoard));
                 currentPlayer = currentPlayer == 1 ? 2 : 1;
-                currentBoard.printBoard();
-                System.out.println("Player " + currentPlayer + "'s turn");
                 return true;
             }
         }
@@ -157,13 +169,47 @@ public final class GameController {
 
 
     public static void main(String[] args) {
-        GameController gameController = GameController.getInstance();
-        boolean capture;
         try {
+            //setup game
+            boolean capture;
             Scanner scanner = new Scanner(System.in);
+            GameController game = new GameController();
             String input;
+            Agent[] playerAgents = new Agent[2];
+            System.out.println("select Player 1: Human or AI");
+            input = scanner.nextLine();
+            if (input.equalsIgnoreCase("AI")) {
+                System.out.println("Enter search depth");
+                int depth = scanner.nextInt();
+                scanner.nextLine();
+                Agent agent1 = new Agent(new MiniMax(), 1, depth);
+                playerAgents[0] = agent1;
+                System.out.println("Player 1 will be played by AI");
+            } else {
+                System.out.println("Player 1 will be played by Human");
+            }
+            System.out.println("select Player 2: Human or AI");
+            input = scanner.nextLine();
+            if (input.equalsIgnoreCase("AI")) {
+                System.out.println("Enter search depth");
+                int depth = scanner.nextInt();
+                scanner.nextLine();
+                Agent a2 = new Agent(new MiniMax(), 2, depth);
+                playerAgents[1] = a2;
+                System.out.println("Player 2 will be played by AI");
+            } else {
+                System.out.println("Player 2 will be played by Human");
+            }
+            game.startNewGame();
             label:
             while (true) {
+                if(playerAgents[game.currentPlayer-1]!= null)
+                {
+                    game.makeMove(playerAgents[game.currentPlayer-1].findNextMove(game));
+                    game.currentBoard.printBoard();
+                    System.out.println("Player " + game.currentPlayer + "'s turn");
+                    continue;
+                }
                 input = scanner.nextLine();
                 switch (input) {
                     case "exit":
@@ -171,10 +217,10 @@ public final class GameController {
                         break label;
                     case "reset":
                         System.out.println("Resetting game");
-                        gameController.startNewGame();
+                        game.startNewGame();
                         continue;
                     case "undo":
-                        gameController.undo();
+                        game.undo();
                         continue;
                 }
 
@@ -182,11 +228,12 @@ public final class GameController {
                     System.out.println("Invalid input, try again");
                     continue;
                 }
-                capture = gameController.makeMove(parseCoordinates(input.charAt(0), Integer.parseInt(input.substring(1))));
+                capture = game.makeMove(parseCoordinates(input.charAt(0), Integer.parseInt(input.substring(1))));
                 if (capture) {
+                    game.currentBoard.printBoard();
+                    System.out.println("Capture move possible");
                     while (capture) {
                         System.out.println("Enter capture move");
-                        System.out.println(checkCapture(parseCoordinates(input.charAt(0), Integer.parseInt(input.substring(1))), gameController.currentBoard, gameController.currentPlayer));
                         String captureInput = scanner.nextLine();
 
                         switch (captureInput) {
@@ -195,16 +242,18 @@ public final class GameController {
                                 break label;
                             case "reset":
                                 System.out.println("Resetting game");
-                                gameController.startNewGame();
+                                game.startNewGame();
                                 capture = false;
                                 continue;
                             case "undo":
-                                gameController.undo();
+                                game.undo();
                                 capture = false;
                                 continue;
                         }
 
-                        capture = !gameController.makeCaptureMove(checkCapture(parseCoordinates(input.charAt(0), Integer.parseInt(input.substring(1))), gameController.currentBoard, gameController.currentPlayer), parseCoordinates(captureInput.charAt(0), Integer.parseInt(captureInput.substring(1))));
+                        capture = !game.makeCaptureMove(checkCapture(parseCoordinates(input.charAt(0), Integer.parseInt(input.substring(1))), game.currentBoard, game.currentPlayer), parseCoordinates(captureInput.charAt(0), Integer.parseInt(captureInput.substring(1))));
+                        game.currentBoard.printBoard();
+                        System.out.println("Player " + game.currentPlayer + "'s turn");
                     }
 
                 }
@@ -214,16 +263,25 @@ public final class GameController {
         }
     }
 
-    private void undo() {
+    public void undo() {
         //resets the board to the state before the last move
         //if there are no moves to undo, nothing happens
         if (boardHistory.empty()) {
             System.out.println("No moves to undo");
         } else {
+            //check if the last move was a capture move
+            //if so, undo the move before that as well
+            if (Arrays.stream(boardHistory.peek().getBoard()).anyMatch(a -> Arrays.stream(a).anyMatch(b -> b == 9))) {
+                boardHistory.pop();
+            }
             currentBoard.setBoard(boardHistory.pop().getBoard());
             currentBoard.printBoard();
             currentPlayer = currentPlayer == 1 ? 2 : 1;
             System.out.println("Player " + currentPlayer + "'s turn");
         }
+    }
+
+    public Board getCurrentBoard() {
+        return currentBoard;
     }
 }

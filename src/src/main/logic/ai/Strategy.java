@@ -1,4 +1,7 @@
 package main.logic.ai;
 
-public class Strategy {
+import main.data.Exceptions.invalidMoveException;
+
+public abstract class Strategy {
+    public abstract int execute(Object ... params) throws invalidMoveException;
 }

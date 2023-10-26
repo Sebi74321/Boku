@@ -1,76 +1,58 @@
 package main.logic.ai;
+
+import main.data.Board;
+import main.data.Exceptions.invalidMoveException;
+import main.logic.GameController;
+
+import java.util.List;
+
 //Minimax algorithm for Boku
 public class MiniMax extends Strategy {
-
-        // Initial values of
-// Alpha and Beta
-        static int MAX = 1000;
-        static int MIN = -1000;
-        private int searchDepth;
 
         // Returns optimal value for
 // current player (Initially called
 // for root and maximizer)
-        static int minimax(int depth, int nodeIndex,
-                           boolean maximizingPlayer,
-                           int[] values, int alpha,
-                           int beta)
-        {
-            // Terminating condition. i.e
-            // leaf node is reached
-            if (depth == 3)
-                return values[nodeIndex];
+        private int abMiniMax(GameController game, int depth, int player, boolean isMaxPlayer, int alpha, int beta) throws invalidMoveException {
 
-            int best;
-            if (maximizingPlayer)
-            {
-                best = MIN;
-
-                // Recur for left and
-                // right children
-                for (int i = 0; i < 2; i++)
-                {
-                    int val = minimax(depth + 1, nodeIndex * 2 + i,
-                            false, values, alpha, beta);
-                    best = Math.max(best, val);
-                    alpha = Math.max(alpha, best);
-
-                    // Alpha Beta Pruning
-                    if (beta <= alpha)
-                        return alpha;
+            Board currentBoard = game.getCurrentBoard();
+            int evaluation = Heuristic.evaluate(currentBoard.getBoard(), player);
+            if (depth == 0 || evaluation == 1000 || evaluation == -1000) {
+                return evaluation;
+            }
+            int bestScore;
+            if (isMaxPlayer) {
+                bestScore = Integer.MIN_VALUE;
+                List<int[]> availableMoves = currentBoard.getAvailableMoves(player);
+                for (int[] move : availableMoves) {
+                    game.makeMove(move);
+                    int score = abMiniMax( game, depth - 1,3-player, false, alpha, beta);
+                    bestScore = Math.max(score, bestScore);
+                    alpha = Math.max(alpha, score);
+                    if (beta <= alpha) {
+//                    System.out.println("Pruned");
+                        break;
+                    }
+                }
+            } else {
+                bestScore = Integer.MAX_VALUE;
+                List<int[]> availableMoves = currentBoard.getAvailableMoves(player);
+                for (int[] move : availableMoves) {
+                    game.makeMove(move);
+                    int score = abMiniMax( game,depth - 1, 3-player, true, alpha, beta);
+                    bestScore = Math.min(score, bestScore);
+                    beta = Math.min(beta, score);
+                    if (beta <= alpha) {
+//                    System.out.println("Pruned");
+                        break;
+                    }
                 }
             }
-            else
-            {
-                best = MAX;
-
-                // Recur for left and
-                // right children
-                for (int i = 0; i < 2; i++)
-                {
-
-                    int val = minimax(depth + 1, nodeIndex * 2 + i,
-                            true, values, alpha, beta);
-                    best = Math.min(best, val);
-                    beta = Math.min(beta, best);
-
-                    // Alpha Beta Pruning
-                    if (beta <= alpha)
-                        return beta;
-                }
-            }
-            return best;
-        }
-
-        // Driver Code
-        public static void main (String[] args)
-        {
-
-            int[] values = {3, 5, 6, 9, 1, 2, 0, -1};
-            System.out.println("The optimal value is : " +
-                    minimax(0, 0, true, values, MIN, MAX));
-
+            return bestScore;
         }
 
 
+    @Override
+    public int execute(Object... params) throws invalidMoveException {
+        return abMiniMax((GameController) params[0], (int) params[1], (int) params[2], (boolean) params[3], (int) params[4], (int) params[5]);
+    }
 }

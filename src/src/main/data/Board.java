@@ -1,6 +1,7 @@
 package main.data;
 
 import main.data.Exceptions.invalidMoveException;
+import main.logic.GameController;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -127,5 +128,25 @@ public class Board {
         board.setBoard(boardCopy1.getBoard());
         board.printBoard();
 
+    }
+
+    public List<int[]> getAvailableMoves(int player) {
+        List<int[]> moves = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < i; j++) {
+                if (board[i][j] == 0) {
+                    List<int[]> captureMoves = GameController.checkCapture(new int[]{i, j}, this, player);
+                    if(captureMoves.size()>0){
+                        for(int[] move: captureMoves){
+                            moves.add(new int[]{i, j, move[0], move[1]});
+                        }
+                    }
+                    else {
+                        moves.add(new int[]{i, j});
+                    }
+                }
+            }
+        }
+        return moves;
     }
 }

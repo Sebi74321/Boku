@@ -5,38 +5,33 @@ import static main.logic.GameController.checkWin;
 //standard heuristic for Boku
 public class Heuristic {
 
-    int score = 0;
-    int player;
-    int opponent;
-    boolean winningState = false;
-    boolean losingState = false;
-    int playerPieces = 0;
-    int opponentPieces = 0;
-    boolean captureMoveMade = false;
-    int possibleOpponentCaptures = 0;
-    int possibleCaptures = 0;
+    static int score = 0;
+    static int player;
+    static int opponent;
+    static boolean winningState = false;
+    static boolean losingState = false;
+    static int playerPieces = 0;
+    static int opponentPieces = 0;
+    static boolean captureMoveMade = false;
+    static int possibleOpponentCaptures = 0;
+    static int possibleCaptures = 0;
 
 
-    public Heuristic(int player) {
-        this.player = player;
-        opponent = player == 1 ? 2 : 1;
-    }
-
-    public int evaluate(int[][] board) {
+    public static int evaluate(int[][] board, int player) {
+        Heuristic.player = player;
         getCurrentPiecesAndWinningState(board);
         if(winningState){
-            return score = 100000;
+            return score = 1000;
         }
         else if(losingState){
-            return score = -100000;
+            return score = -1000;
         }
         getPossibleCaptures(board);
-
-
-        return score;
+        score = score - possibleOpponentCaptures*10 + possibleCaptures*10;
+        return (int) (Math.random()*100);
     }
 
-    private void getPossibleCaptures(int[][] board) {
+    private static void getPossibleCaptures(int[][] board) {
         //find possible captures consisting of two same pieces and one opposing piece
 
         //horizontal, vertical and diagonal
@@ -75,7 +70,7 @@ public class Heuristic {
 
     }
 
-    private void getCurrentPiecesAndWinningState(int[][] board) {
+    private static void getCurrentPiecesAndWinningState(int[][] board) {
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
                 if(checkWin(i,j,board,player)){
