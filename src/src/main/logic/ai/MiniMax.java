@@ -24,8 +24,9 @@ public class MiniMax extends Strategy {
                 bestScore = Integer.MIN_VALUE;
                 List<int[]> availableMoves = currentBoard.getAvailableMoves(player);
                 for (int[] move : availableMoves) {
-                    game.makeMove(move);
-                    int score = abMiniMax( game, depth - 1,3-player, false, alpha, beta);
+                    GameController nextSimulatedGame = new GameController(game);
+                    nextSimulatedGame.makeMove(move);
+                    int score = abMiniMax( nextSimulatedGame, depth - 1,3-player, false, alpha, beta);
                     bestScore = Math.max(score, bestScore);
                     alpha = Math.max(alpha, score);
                     if (beta <= alpha) {
@@ -37,8 +38,9 @@ public class MiniMax extends Strategy {
                 bestScore = Integer.MAX_VALUE;
                 List<int[]> availableMoves = currentBoard.getAvailableMoves(player);
                 for (int[] move : availableMoves) {
-                    game.makeMove(move);
-                    int score = abMiniMax( game,depth - 1, 3-player, true, alpha, beta);
+                    GameController nextSimulatedGame = new GameController(game);
+                    nextSimulatedGame.makeMove(move);
+                    int score = abMiniMax( nextSimulatedGame,depth - 1, 3-player, true, alpha, beta);
                     bestScore = Math.min(score, bestScore);
                     beta = Math.min(beta, score);
                     if (beta <= alpha) {

@@ -15,20 +15,27 @@ public class Heuristic {
     static boolean captureMoveMade = false;
     static int possibleOpponentCaptures = 0;
     static int possibleCaptures = 0;
+    static int playerChains3 = 0;
+    static int opponentChains3 = 0;
+    static int playerChains4 = 0;
 
 
     public static int evaluate(int[][] board, int player) {
         Heuristic.player = player;
+        Heuristic.opponent = 3 - player;
         getCurrentPiecesAndWinningState(board);
-        if(winningState){
+        checkForChains(board);
+        if (winningState) {
             return score = 1000;
-        }
-        else if(losingState){
+        } else if (losingState) {
             return score = -1000;
         }
         getPossibleCaptures(board);
-        score = score - possibleOpponentCaptures*10 + possibleCaptures*10;
-        return (int) (Math.random()*100);
+        score = score + playerPieces - opponentPieces;
+        score = score + playerChains3 * 5 - opponentChains3 * 5;
+        score = score + playerChains4 * 3;
+        score = score - possibleOpponentCaptures * 10 + (possibleCaptures - 1) * 10;
+        return score;
     }
 
     private static void getPossibleCaptures(int[][] board) {
@@ -42,24 +49,24 @@ public class Heuristic {
                     if ((board[i][j] == player && board[i][j + 1] == player && board[i][j + 2] == opponent) || (board[i][j] == opponent && board[i][j + 1] == player && board[i][j + 2] == player)) {
                         possibleOpponentCaptures++;
                     }
-                    if ((board[i][j] == opponent && board[i][j + 1] == opponent && board[i][j + 2] == player)||((board[i][j] == player && board[i][j + 1] == opponent && board[i][j + 2] == opponent))) {
+                    if ((board[i][j] == opponent && board[i][j + 1] == opponent && board[i][j + 2] == player) || ((board[i][j] == player && board[i][j + 1] == opponent && board[i][j + 2] == opponent))) {
                         possibleCaptures++;
                     }
                 }
                 //vertical
                 if (i < 8) {
-                    if ((board[i][j] == player && board[i + 1][j] == player && board[i + 2][j] == opponent)||(board[i][j] == opponent && board[i + 1][j] == player && board[i + 2][j] == player)) {
+                    if ((board[i][j] == player && board[i + 1][j] == player && board[i + 2][j] == opponent) || (board[i][j] == opponent && board[i + 1][j] == player && board[i + 2][j] == player)) {
                         possibleOpponentCaptures++;
                     }
-                    if ((board[i][j] == opponent && board[i + 1][j] == opponent && board[i + 2][j] == player)||(board[i][j] == player && board[i + 1][j] == opponent && board[i + 2][j] == opponent)) {
+                    if ((board[i][j] == opponent && board[i + 1][j] == opponent && board[i + 2][j] == player) || (board[i][j] == player && board[i + 1][j] == opponent && board[i + 2][j] == opponent)) {
                         possibleCaptures++;
                     }
                     //diagonal
                     if (j < 8) {
-                        if ((board[i][j] == player && board[i + 1][j + 1] == player && board[i + 2][j + 2] == opponent)||(board[i][j] == opponent && board[i + 1][j + 1] == player && board[i + 2][j + 2] == player)) {
+                        if ((board[i][j] == player && board[i + 1][j + 1] == player && board[i + 2][j + 2] == opponent) || (board[i][j] == opponent && board[i + 1][j + 1] == player && board[i + 2][j + 2] == player)) {
                             possibleOpponentCaptures++;
                         }
-                        if ((board[i][j] == opponent && board[i + 1][j + 1] == opponent && board[i + 2][j + 2] == player)||(board[i][j] == player && board[i + 1][j + 1] == opponent && board[i + 2][j + 2] == opponent)) {
+                        if ((board[i][j] == opponent && board[i + 1][j + 1] == opponent && board[i + 2][j + 2] == player) || (board[i][j] == player && board[i + 1][j + 1] == opponent && board[i + 2][j + 2] == opponent)) {
                             possibleCaptures++;
                         }
                     }
@@ -73,10 +80,10 @@ public class Heuristic {
     private static void getCurrentPiecesAndWinningState(int[][] board) {
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
-                if(checkWin(i,j,board,player)){
+                if (checkWin(i, j, board, player)) {
                     winningState = true;
                     return;
-                }else if(checkWin(i,j,board,opponent)){
+                } else if (checkWin(i, j, board, opponent)) {
                     losingState = true;
                     return;
                 }
@@ -86,6 +93,110 @@ public class Heuristic {
                     opponentPieces++;
                 } else if (board[i][j] == 9) {
                     captureMoveMade = true;
+                }
+            }
+        }
+    }
+
+    private static void checkForChains(int[][] board) {
+        //check for chains of 3 or more pieces
+        //horizontal, vertical and diagonal
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                //horizontal
+                if (j < 8) {
+                    if (board[i][j] == player && board[i][j + 1] == player && board[i][j + 2] == player) {
+                        if ((j > 0 && board[i][j - 1] == 0) || (j < 7 && board[i][j + 3] == 0)) {
+                            playerChains3++;
+                        }
+                        if (j < 7) {
+                            if (board[i][j + 3] == 0) {
+                                playerChains4++;
+                            }
+                            //no else if, so that if there is no piece on either side it will count double
+                            if (board[i][j + 3] == player) {
+                                if (j < 6 && board[i][j + 4] == 0 || j > 0 && board[i][j - 1] == 0) {
+                                    playerChains4++;
+                                }
+                            }
+                        }
+                    } else if (board[i][j] == opponent && board[i][j + 1] == opponent && board[i][j + 2] == opponent) {
+                        if ((j > 0 && board[i][j - 1] == 0) || (j < 7 && board[i][j + 3] == 0)) {
+                            opponentChains3++;
+                        }
+                        if (j < 7) {
+                            if (board[i][j + 3] == 0) {
+                                losingState = true;
+                            } else if (board[i][j + 3] == opponent) {
+                                if (j < 6 && board[i][j + 4] == 0 || j > 0 && board[i][j - 1] == 0) {
+                                    losingState = true;
+                                }
+                            }
+                        }
+                    }
+                }
+                //vertical
+                if (i < 8) {
+                    if (board[i][j] == player && board[i + 1][j] == player && board[i + 2][j] == player) {
+                        if ((i > 0 && board[i - 1][j] == 0) || (i < 7 && board[i + 3][j] == 0)) {
+                            playerChains3++;
+                        }
+                        if (i < 7) {
+                            if (board[i + 3][j] == 0) {
+                                playerChains3++;
+                            }
+                            if (board[i + 3][j] == player) {
+                                if (i < 6 && board[i + 4][j] == 0 || i > 0 && board[i - 1][j] == 0) {
+                                    playerChains4++;
+                                }
+                            }
+                        }
+                    } else if (board[i][j] == opponent && board[i + 1][j] == opponent && board[i + 2][j] == opponent) {
+                        if ((i > 0 && board[i - 1][j] == 0) || (i < 7 && board[i + 3][j] == 0)) {
+                            opponentChains3++;
+                        }
+                        if (i < 7) {
+                            if (board[i + 3][j] == 0) {
+                                losingState = true;
+                            } else if (board[i + 3][j] == opponent) {
+                                if (i < 6 && board[i + 4][j] == 0 || i > 0 && board[i - 1][j] == 0) {
+                                    losingState = true;
+                                }
+                            }
+                        }
+                    }
+                    //diagonal
+                    if (j < 8) {
+                        if (board[i][j] == player && board[i + 1][j + 1] == player && board[i + 2][j + 2] == player) {
+                            if ((i > 0 && j > 0 && board[i - 1][j - 1] == 0) || (i < 7 && j < 7 && board[i + 3][j + 3] == 0)) {
+                                playerChains3++;
+                            }
+                            if (i < 7 && j < 7) {
+                                if (board[i + 3][j + 3] == 0) {
+                                    playerChains4++;
+                                }
+                                if (board[i + 3][j + 3] == player) {
+                                    if (i < 6 && j < 6 && board[i + 4][j + 4] == 0 || i > 0 && j > 0 && board[i - 1][j - 1] == 0) {
+                                        playerChains4++;
+                                    }
+                                }
+                            }
+                        } else if (board[i][j] == opponent && board[i + 1][j + 1] == opponent && board[i + 2][j + 2] == opponent) {
+                            if ((i > 0 && j > 0 && board[i - 1][j - 1] == 0) || (i < 7 && j < 7 && board[i + 3][j + 3] == 0)) {
+                                opponentChains3++;
+                            }
+                            if (i < 7 && j < 7) {
+                                if (board[i + 3][j + 3] == 0) {
+                                    losingState = true;
+                                } else if (board[i + 3][j + 3] == opponent) {
+                                    if (i < 6 && j < 6 && board[i + 4][j + 4] == 0 || i > 0 && j > 0 && board[i - 1][j - 1] == 0) {
+                                        losingState = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                 }
             }
         }
