@@ -148,18 +148,17 @@ public final class GameController {
         //check in all 6 directions
         //horizontal
         List<int[]> captureMoves = new ArrayList<>();
-        board.getNeighbours(coordinate[0], coordinate[1]);
-        for (int[] neighbour : board.getNeighbours(coordinate[0], coordinate[1])) {
-            if (board.getBoard(neighbour[0], neighbour[1]) + currentPlayer == 3) {
-                for (int[] neighbour2 : board.getNeighbours(neighbour[0], neighbour[1])) {
-                    if (board.getBoard(neighbour2[0], neighbour2[1]) + currentPlayer == 3) {
-                        for (int[] neighbour3 : board.getNeighbours(neighbour2[0], neighbour2[1])) {
-                            if (board.getBoard(neighbour3[0], neighbour3[1]) == currentPlayer) {
-                                captureMoves.add(neighbour);
-                                captureMoves.add(neighbour2);
-                            }
-                        }
+        int[][] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}};
 
+        for (int[] direction : directions) {
+            if (coordinate[0] + 2 * direction[0] < 0 || coordinate[0] + 2 * direction[0] > 9 || coordinate[1] + 2 * direction[1] < 0 || coordinate[1] + 2 * direction[1] > 9) {
+                continue;
+            }
+            if (board.getTile(coordinate[0] + direction[0], coordinate[1] + direction[1]) == 3 - currentPlayer) {
+                if (board.getTile(coordinate[0] + 2 * direction[0], coordinate[1] + 2 * direction[1]) == 3 - currentPlayer) {
+                    if (board.getTile(coordinate[0] + 3 * direction[0], coordinate[1] + 3 * direction[1]) == currentPlayer) {
+                        captureMoves.add(new int[]{coordinate[0] + direction[0], coordinate[1] + direction[1]});
+                        captureMoves.add(new int[]{coordinate[0] + 2 * direction[0], coordinate[1] + 2 * direction[1]});
                     }
                 }
             }
@@ -203,9 +202,8 @@ public final class GameController {
             game.startNewGame();
             label:
             while (true) {
-                if(playerAgents[game.currentPlayer-1]!= null)
-                {
-                    game.makeMove(playerAgents[game.currentPlayer-1].findNextMove(game));
+                if (playerAgents[game.currentPlayer - 1] != null) {
+                    game.makeMove(playerAgents[game.currentPlayer - 1].findNextMove(game));
                     game.currentBoard.printBoard();
                     System.out.println("Player " + game.currentPlayer + "'s turn");
                     continue;
@@ -229,6 +227,8 @@ public final class GameController {
                     continue;
                 }
                 capture = game.makeMove(parseCoordinates(input.charAt(0), Integer.parseInt(input.substring(1))));
+                game.currentBoard.printBoard();
+                System.out.println("Player " + game.currentPlayer + "'s turn");
                 if (capture) {
                     game.currentBoard.printBoard();
                     System.out.println("Capture move possible");

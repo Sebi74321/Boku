@@ -149,4 +149,8 @@ public class Board {
         }
         return moves;
     }
+
+    public int getTile(int x, int y) {
+        return board[x][y];
+    }
 }
