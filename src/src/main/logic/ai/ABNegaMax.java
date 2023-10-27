@@ -5,7 +5,7 @@ public class ABNegaMax extends Strategy {
     public int abNegaMax(int[][] state, int depth, int alpha, int beta, int player) {
 
         int evaluation = Heuristic.evaluate(state, player);
-        if (evaluation == 1000 || evaluation == -1000 || depth == 0) {
+        if (evaluation == 10000 || evaluation == -10000 || depth == 0) {
             return Heuristic.evaluate(state, player);
 
         }
