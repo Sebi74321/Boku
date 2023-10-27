@@ -1,5 +1,7 @@
 package main.logic.ai;
 
+import main.data.Board;
+
 import static main.logic.GameController.checkWin;
 
 //standard heuristic for Boku
@@ -21,6 +23,7 @@ public class Heuristic {
 
 
     public static int evaluate(int[][] board, int player) {
+        resetStats();
         Heuristic.player = player;
         Heuristic.opponent = 3 - player;
         getCurrentPiecesAndWinningState(board);
@@ -34,8 +37,25 @@ public class Heuristic {
         score = score + playerPieces - opponentPieces;
         score = score + playerChains3 * 5 - opponentChains3 * 5;
         score = score + playerChains4 * 3;
+        if(captureMoveMade){
+            score = score + 5;
+        }
         score = score - possibleOpponentCaptures * 10 + (possibleCaptures - 1) * 10;
         return score;
+    }
+
+    private static void resetStats() {
+        score = 0;
+        winningState = false;
+        losingState = false;
+        playerPieces = 0;
+        opponentPieces = 0;
+        captureMoveMade = false;
+        possibleOpponentCaptures = 0;
+        possibleCaptures = 0;
+        playerChains3 = 0;
+        opponentChains3 = 0;
+        playerChains4 = 0;
     }
 
     private static void getPossibleCaptures(int[][] board) {
@@ -78,6 +98,7 @@ public class Heuristic {
     }
 
     private static void getCurrentPiecesAndWinningState(int[][] board) {
+        Board b = new Board(board);
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
                 if (checkWin(i, j, board, player)) {
@@ -88,9 +109,11 @@ public class Heuristic {
                     return;
                 }
                 if (board[i][j] == 1) {
-                    playerPieces++;
+                    //weighs tiles with more neighbours higher
+                    playerPieces += b.getNeighbours(i, j).size();
+
                 } else if (board[i][j] == 2) {
-                    opponentPieces++;
+                    opponentPieces += b.getNeighbours(i, j).size();
                 } else if (board[i][j] == 9) {
                     captureMoveMade = true;
                 }

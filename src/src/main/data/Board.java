@@ -133,7 +133,7 @@ public class Board {
     public List<int[]> getAvailableMoves(int player) {
         List<int[]> moves = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < i; j++) {
+            for (int j = 0; j < 10; j++) {
                 if (board[i][j] == 0) {
                     List<int[]> captureMoves = GameController.checkCapture(new int[]{i, j}, this, player);
                     if(captureMoves.size()>0){

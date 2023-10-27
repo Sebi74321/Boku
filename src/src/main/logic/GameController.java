@@ -51,11 +51,10 @@ public final class GameController {
         boardHistory.push(new Board(currentBoard));
         currentBoard.setTile(coordinate[0], coordinate[1], currentPlayer);
         if (checkWin(coordinate[0], coordinate[1], currentBoard.getBoard(), currentPlayer)) {
-            System.out.println("Player " + currentPlayer + " wins!");
-            startNewGame();
             return false;
         }
         List<int[]> captureMoves = checkCapture(coordinate, currentBoard, currentPlayer);
+        currentBoard.unblockAll();
         if (!captureMoves.isEmpty()) {
             //if a capture move is already given, make that move (relevant for AI)
             if (coordinate.length == 4) {
@@ -66,7 +65,6 @@ public final class GameController {
 
         }
         currentPlayer = currentPlayer == 1 ? 2 : 1;
-        currentBoard.unblockAll();
         return false;
     }
 
@@ -100,16 +98,17 @@ public final class GameController {
         int count = 0;
         //check in all 6 directions whether a line of 5 is formed
         //horizontal
+
         for (int i = -4; i < 5; i++) {
             if (x + i >= 0 && x + i < 10) {
                 if (board[x + i][y] == player) {
                     count++;
+                    if (count >= 5) {
+                        return true;
+                    }
                 } else {
                     count = 0;
                 }
-            }
-            if (count >= 5) {
-                return true;
             }
         }
         //vertical
@@ -117,12 +116,12 @@ public final class GameController {
             if (y + i >= 0 && y + i < 10) {
                 if (board[x][y + i] == player) {
                     count++;
+                    if (count >= 5) {
+                        return true;
+                    }
                 } else {
                     count = 0;
                 }
-            }
-            if (count >= 5) {
-                return true;
             }
         }
         //diagonal 1
@@ -130,12 +129,12 @@ public final class GameController {
             if (x + i >= 0 && x + i < 10 && y + i >= 0 && y + i < 10) {
                 if (board[x + i][y + i] == player) {
                     count++;
+                    if (count >= 5) {
+                        return true;
+                    }
                 } else {
                     count = 0;
                 }
-            }
-            if (count >= 5) {
-                return true;
             }
         }
         return false;
@@ -151,7 +150,7 @@ public final class GameController {
         int[][] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}};
 
         for (int[] direction : directions) {
-            if (coordinate[0] + 2 * direction[0] < 0 || coordinate[0] + 2 * direction[0] > 9 || coordinate[1] + 2 * direction[1] < 0 || coordinate[1] + 2 * direction[1] > 9) {
+            if (coordinate[0] + 3 * direction[0] < 0 || coordinate[0] + 3 * direction[0] > 9 || coordinate[1] + 3 * direction[1] < 0 || coordinate[1] + 3 * direction[1] > 9) {
                 continue;
             }
             if (board.getTile(coordinate[0] + direction[0], coordinate[1] + direction[1]) == 3 - currentPlayer) {
@@ -168,11 +167,15 @@ public final class GameController {
 
 
     public static void main(String[] args) {
+        GameController gameController = new GameController();
+        gameController.runGame();
+    }
+
+    private void runGame() {
         try {
             //setup game
             boolean capture;
             Scanner scanner = new Scanner(System.in);
-            GameController game = new GameController();
             String input;
             Agent[] playerAgents = new Agent[2];
             System.out.println("select Player 1: Human or AI");
@@ -199,13 +202,22 @@ public final class GameController {
             } else {
                 System.out.println("Player 2 will be played by Human");
             }
-            game.startNewGame();
+            startNewGame();
             label:
             while (true) {
-                if (playerAgents[game.currentPlayer - 1] != null) {
-                    game.makeMove(playerAgents[game.currentPlayer - 1].findNextMove(game));
-                    game.currentBoard.printBoard();
-                    System.out.println("Player " + game.currentPlayer + "'s turn");
+                if (playerAgents[currentPlayer - 1] != null) {
+                    int[] move = playerAgents[currentPlayer - 1].findNextMove(this);
+                    makeMove(move);
+                    if(checkWin(move[0], move[1], currentBoard.getBoard(), currentPlayer)){
+                        System.out.println("Player " + (currentPlayer) + " won");
+                        break;
+                    }
+                    System.out.println("Player " + (3-currentPlayer) + " made move " + (char) (move[0] + 'A') + (move[1] + 1));
+                    if(move.length == 4){
+                        System.out.println("Player " + (3-currentPlayer) + " captured " + (char) (move[2] + 'A') + (move[3] + 1));
+                    }
+                    currentBoard.printBoard();
+                    System.out.println("Player " + currentPlayer + "'s turn");
                     continue;
                 }
                 input = scanner.nextLine();
@@ -215,10 +227,10 @@ public final class GameController {
                         break label;
                     case "reset":
                         System.out.println("Resetting game");
-                        game.startNewGame();
+                        startNewGame();
                         continue;
                     case "undo":
-                        game.undo();
+                        undo();
                         continue;
                 }
 
@@ -226,11 +238,16 @@ public final class GameController {
                     System.out.println("Invalid input, try again");
                     continue;
                 }
-                capture = game.makeMove(parseCoordinates(input.charAt(0), Integer.parseInt(input.substring(1))));
-                game.currentBoard.printBoard();
-                System.out.println("Player " + game.currentPlayer + "'s turn");
+                int[] move = parseCoordinates(input.charAt(0), Integer.parseInt(input.substring(1)));
+                capture = makeMove(move);
+                if(checkWin(move[0], move[1], currentBoard.getBoard(), currentPlayer)){
+                    System.out.println("Player " + (currentPlayer) + " won");
+                    break;
+                }
+                currentBoard.printBoard();
+                System.out.println("Player " + currentPlayer + "'s turn");
                 if (capture) {
-                    game.currentBoard.printBoard();
+                    currentBoard.printBoard();
                     System.out.println("Capture move possible");
                     while (capture) {
                         System.out.println("Enter capture move");
@@ -242,18 +259,18 @@ public final class GameController {
                                 break label;
                             case "reset":
                                 System.out.println("Resetting game");
-                                game.startNewGame();
+                                startNewGame();
                                 capture = false;
                                 continue;
                             case "undo":
-                                game.undo();
+                                undo();
                                 capture = false;
                                 continue;
                         }
 
-                        capture = !game.makeCaptureMove(checkCapture(parseCoordinates(input.charAt(0), Integer.parseInt(input.substring(1))), game.currentBoard, game.currentPlayer), parseCoordinates(captureInput.charAt(0), Integer.parseInt(captureInput.substring(1))));
-                        game.currentBoard.printBoard();
-                        System.out.println("Player " + game.currentPlayer + "'s turn");
+                        capture = !makeCaptureMove(checkCapture(parseCoordinates(input.charAt(0), Integer.parseInt(input.substring(1))), currentBoard, currentPlayer), parseCoordinates(captureInput.charAt(0), Integer.parseInt(captureInput.substring(1))));
+                        currentBoard.printBoard();
+                        System.out.println("Player " + currentPlayer + "'s turn");
                     }
 
                 }
