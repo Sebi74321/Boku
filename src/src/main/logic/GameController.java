@@ -209,10 +209,10 @@ public final class GameController {
                     int[] move = playerAgents[currentPlayer - 1].findNextMove(this);
                     makeMove(move);
                     if(checkWin(move[0], move[1], currentBoard.getBoard(), currentPlayer)){
+                        System.out.println("Player " + (3-currentPlayer) + " made move " + (char) (move[0] + 'A') + (move[1] + 1));
                         System.out.println("Player " + (currentPlayer) + " won");
                         break;
                     }
-                    System.out.println("Player " + (3-currentPlayer) + " made move " + (char) (move[0] + 'A') + (move[1] + 1));
                     if(move.length == 4){
                         System.out.println("Player " + (3-currentPlayer) + " captured " + (char) (move[2] + 'A') + (move[3] + 1));
                     }
