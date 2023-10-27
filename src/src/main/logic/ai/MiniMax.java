@@ -16,7 +16,7 @@ public class MiniMax extends Strategy {
 
             Board currentBoard = game.getCurrentBoard();
             int evaluation = Heuristic.evaluate(currentBoard.getBoard(), player);
-            if (depth == 0 || evaluation == 1000 || evaluation == -1000) {
+            if (depth == 0 || evaluation == 10000 || evaluation == -10000) {
                 return evaluation;
             }
             int bestScore;

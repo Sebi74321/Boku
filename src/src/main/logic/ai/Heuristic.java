@@ -29,9 +29,9 @@ public class Heuristic {
         getCurrentPiecesAndWinningState(board);
         checkForChains(board);
         if (winningState) {
-            return score = 1000;
+            return score = 10000;
         } else if (losingState) {
-            return score = -1000;
+            return score = -10000;
         }
         getPossibleCaptures(board);
         score = score + playerPieces - opponentPieces;
